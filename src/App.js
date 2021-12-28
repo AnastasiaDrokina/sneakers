@@ -1,3 +1,4 @@
+import React from "react";
 import Card from "./components/Card";
 import Header from "./components/Header";
 import Drawer from "./components/Drawer";
@@ -26,10 +27,11 @@ const arr = [
 ];
 
 function App() {
+  const [cartOpened, setCartOpened] = React.useState(false);
   return (
     <div className="wrapper clear">
-      <Drawer />
-      <Header />
+      {cartOpened && <Drawer onClose={() => setCartOpened(false)} />}
+      <Header onClickCart={() => setCartOpened(true)} />
 
       <div className="content p-40">
         <div className="d-flex align-center justify-between mb-40">
@@ -41,7 +43,13 @@ function App() {
         </div>
         <div className="d-flex flex-wrap">
           {arr.map((obj) => (
-            <Card title={obj.title} price={obj.price} imgUrl={obj.imgUrl} />
+            <Card
+              title={obj.title}
+              price={obj.price}
+              imgUrl={obj.imgUrl}
+              onPlus={() => console.log("Нажали плюс")}
+              onFavorite={() => console.log("Добавили в закладки")}
+            />
           ))}
         </div>
       </div>
