@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import Card from "./components/Card";
 import Header from "./components/Header";
 import Drawer from "./components/Drawer";
@@ -6,21 +7,37 @@ import Drawer from "./components/Drawer";
 function App() {
   const [items, setItems] = React.useState([]);
   const [cartItems, setCartItems] = React.useState([]);
+  const [favorites, setFavorites] = React.useState([]);
   const [searchValue, setSearchValue] = React.useState("");
   const [cartOpened, setCartOpened] = React.useState(false);
+  console.log(items);
 
   React.useEffect(() => {
-    fetch("https://61cb5bc8194ffe0017788d19.mockapi.io/items")
+    axios
+      .get("https://61cb5bc8194ffe0017788d19.mockapi.io/items")
       .then((res) => {
-        return res.json();
-      })
-      .then((json) => {
-        setItems(json);
+        setItems(res.data);
       });
-  });
+    axios
+      .get("https://61cb5bc8194ffe0017788d19.mockapi.io/cart")
+      .then((res) => {
+        setCartItems(res.data);
+      });
+  }, []);
 
   const onAddToCart = (obj) => {
+    axios.post("https://61cb5bc8194ffe0017788d19.mockapi.io/cart", obj);
     setCartItems((prev) => [...prev, obj]);
+  };
+
+  const onRemoveItem = (id) => {
+    axios.delete(`https://61cb5bc8194ffe0017788d19.mockapi.io/cart/${id}`);
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const onAddToFavorite = (obj) => {
+    axios.post("https://61cb5bc8194ffe0017788d19.mockapi.io/favorites", obj);
+    setFavorites((prev) => [...prev, obj]);
   };
 
   const onChangeSearchInput = (event) => {
@@ -29,7 +46,11 @@ function App() {
   return (
     <div className="wrapper clear">
       {cartOpened && (
-        <Drawer items={cartItems} onClose={() => setCartOpened(false)} />
+        <Drawer
+          items={cartItems}
+          onClose={() => setCartOpened(false)}
+          onRemove={onRemoveItem}
+        />
       )}
       <Header onClickCart={() => setCartOpened(true)} />
 
@@ -61,14 +82,15 @@ function App() {
         <div className="d-flex flex-wrap">
           {items
             .filter((item) => item.title.toLowerCase().includes(searchValue))
-            .map((item, index) => (
+            .map((item) => (
               <Card
-                key={index}
+                key={item.id}
+                id={item.id}
                 title={item.title}
                 price={item.price}
                 imgUrl={item.imgUrl}
                 onPlus={(obj) => onAddToCart(obj)}
-                onFavorite={() => console.log("Добавили в закладки")}
+                onFavorite={(obj) => onAddToFavorite(obj)}
               />
             ))}
         </div>
